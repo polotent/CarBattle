@@ -30,7 +30,7 @@ button_begin_y = display_height // 3
 
 #logo
 logo_image = pygame.transform.scale(pygame.image.load("media/images/logo.png"), [display_width // 2, display_height // 4])
-
+rules_image = pygame.image.load("media/images/rules.png")
 
 #global sockets
 sock_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -80,16 +80,16 @@ num_of_lifes = 5
 
 #car_type, health, x,y, angle
 start_values = {
-    "1" : ["yellow",num_of_lifes,100,100,0,bull_timeout],
-    "2" : ["red",num_of_lifes,200,200,90,bull_timeout],
-    "3" : ["blue",num_of_lifes,300,100,0,bull_timeout],
-    "4" : ["green",num_of_lifes,500,100,90,bull_timeout]
+    "1" : ["yellow",num_of_lifes,600,400,180,bull_timeout],
+    "2" : ["red",num_of_lifes,1540,330,180,bull_timeout],
+    "3" : ["blue",num_of_lifes,1710,1880,90,bull_timeout],
+    "4" : ["green",num_of_lifes,160,1850,0,bull_timeout]
 }
 
-car_yellow = car.Car("yellow",num_of_lifes,100,100,0,bull_timeout)
-car_red = car.Car("red",num_of_lifes,200,200,90,bull_timeout)
-car_blue = car.Car("blue",num_of_lifes,300,100,0,bull_timeout)
-car_green = car.Car("green",num_of_lifes,500,100,90,bull_timeout)
+car_yellow = car.Car(start_values["1"][0],start_values["1"][1],start_values["1"][2],start_values["1"][3],start_values["1"][4],start_values["1"][5])
+car_red = car.Car(start_values["2"][0],start_values["2"][1],start_values["2"][2],start_values["2"][3],start_values["2"][4],start_values["2"][5])
+car_blue = car.Car(start_values["3"][0],start_values["3"][1],start_values["3"][2],start_values["3"][3],start_values["3"][4],start_values["3"][5])
+car_green = car.Car(start_values["4"][0],start_values["4"][1],start_values["4"][2],start_values["4"][3],start_values["4"][4],start_values["4"][5])
 
 cars_obj = {}
 
@@ -113,6 +113,8 @@ lose_sound = pygame.mixer.Sound("media/music/lose.wav")
 button_sound = pygame.mixer.Sound("media/music/button.wav")
 music_stopped = True
 
+rules_read = False
+
 with open('config/config.json','r') as json_file:
     config = json.load(json_file)
     client_data["name"] = config["name"]
@@ -134,6 +136,8 @@ def init_vars():
     global user_number
     global dead_players
     global disconnected_players
+    global rules_read
+    rules_read = False
 
     user_number = 0
     dead_players = []
@@ -167,17 +171,14 @@ def init_vars():
     bullets_obj = []
     bullets_draw_obj = []
 
-    car_yellow = car.Car("yellow",num_of_lifes,100,100,0,bull_timeout)
-    car_red = car.Car("red",num_of_lifes,200,200,90,bull_timeout)
-    car_blue = car.Car("blue",num_of_lifes,300,100,0,bull_timeout)
-    car_green = car.Car("green",num_of_lifes,500,100,90,bull_timeout)
+    car_yellow = car.Car(start_values["1"][0],start_values["1"][1],start_values["1"][2],start_values["1"][3],start_values["1"][4],start_values["1"][5])
+    car_red = car.Car(start_values["2"][0],start_values["2"][1],start_values["2"][2],start_values["2"][3],start_values["2"][4],start_values["2"][5])
+    car_blue = car.Car(start_values["3"][0],start_values["3"][1],start_values["3"][2],start_values["3"][3],start_values["3"][4],start_values["3"][5])
+    car_green = car.Car(start_values["4"][0],start_values["4"][1],start_values["4"][2],start_values["4"][3],start_values["4"][4],start_values["4"][5])
 
     cars_obj = {}
 
     car_draw_obj = {}
-
-
-
 
 def get_button_size(str_value):
     smallfont = pygame.font.Font('media/fonts/pixelfont.ttf',42)
@@ -253,7 +254,7 @@ def server():
     global exception_caught
     global server_running
     host = config["ip"]
-    port = 9999
+    port = 8888
     print('Server started. Host : ', host,', Port : ',port)
     print('Waiting for clients...')
     try:
@@ -283,7 +284,7 @@ def client():
     global client_running
     global disconnected_caught
     client = ip_to_connect
-    port = 9999
+    port = 8888
     try:
         sock_client.connect((client,port))
     except:
@@ -350,6 +351,7 @@ def game(user):
     global disconnected_players
     global disconnected_caught
     global music_stopped
+    global rules_read
 
     user_gui = gui.GameGUI(gameDisplay)
     pygame.mixer.music.load("media/music/main_theme.wav")
@@ -389,8 +391,28 @@ def game(user):
             car_draw_green = car.CarDraw("green",player_name,player_lst[1],player_lst[2],player_lst[3],player_lst[4],player_status)
             car_draw_obj["green"] = car_draw_green
             cars_obj["green"] = car_green
-
-    cam = camera.Camera(gameDisplay,0,0)
+    #setting camera on client
+    cam = camera.Camera(gameDisplay,car_draw_obj[client_car_color].x - center_w,car_draw_obj[client_car_color].y - center_h)
+    cam_x = cam.x
+    cam_y = cam.y
+    #checking on x
+    if (car_draw_obj[client_car_color].x - center_w > 0) and (car_draw_obj[client_car_color].x + center_w < game_map.map_width):
+        cam_x = car_draw_obj[client_car_color].x - center_w
+    else :
+        if (car_draw_obj[client_car_color].x + center_w >= game_map.map_width):
+            cam_x = game_map.map_width - display_width
+        if (car_draw_obj[client_car_color].x + center_w < display_width):
+            cam_x = 0
+    #checking on y
+    if (car_draw_obj[client_car_color].y - center_h > 0) and (car_draw_obj[client_car_color].y + center_h < game_map.map_height):
+        cam_y = car_draw_obj[client_car_color].y - center_h
+    else :
+        if (car_draw_obj[client_car_color].y + center_h >= game_map.map_height):
+            cam_y = game_map.map_height - display_height
+        if (car_draw_obj[client_car_color].y + center_h < display_height):
+            cam_y = 0
+    #creating camera
+    cam = camera.Camera(gameDisplay,cam_x,cam_y)
     while True:
         if user == "client":
             if disconnected_caught == True:
@@ -419,41 +441,43 @@ def game(user):
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 pygame.quit()
                 quit()
-        #Check for key input
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
-            if not ("left" in client_data["controls"]):
-                client_data["controls"].append("left")
-        else:
-            if "left" in client_data["controls"]:
-                client_data["controls"].remove("left")
-        if keys[pygame.K_RIGHT]:
-            if not ("right" in client_data["controls"]):
-                client_data["controls"].append("right")
-        else:
-            if "right" in client_data["controls"]:
-                client_data["controls"].remove("right")
-        if keys[pygame.K_UP]:
-            if not ("up" in client_data["controls"]):
-                client_data["controls"].append("up")
-        else:
-            if "up" in client_data["controls"]:
-                client_data["controls"].remove("up")
-        if keys[pygame.K_DOWN]:
-            if not ("down" in client_data["controls"]):
-                client_data["controls"].append("down")
-        else:
-            if "down" in client_data["controls"]:
-                client_data["controls"].remove("down")
-        if keys[pygame.K_a]:
-            if not ("a" in client_data["controls"]):
-                client_data["controls"].append("a")
-        else:
-            if "a" in client_data["controls"]:
-                client_data["controls"].remove("a")
+        if rules_read == True:
+            #Check for key input
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_LEFT]:
+                if not ("left" in client_data["controls"]):
+                    client_data["controls"].append("left")
+            else:
+                if "left" in client_data["controls"]:
+                    client_data["controls"].remove("left")
+            if keys[pygame.K_RIGHT]:
+                if not ("right" in client_data["controls"]):
+                    client_data["controls"].append("right")
+            else:
+                if "right" in client_data["controls"]:
+                    client_data["controls"].remove("right")
+            if keys[pygame.K_UP]:
+                if not ("up" in client_data["controls"]):
+                    client_data["controls"].append("up")
+            else:
+                if "up" in client_data["controls"]:
+                    client_data["controls"].remove("up")
+            if keys[pygame.K_DOWN]:
+                if not ("down" in client_data["controls"]):
+                    client_data["controls"].append("down")
+            else:
+                if "down" in client_data["controls"]:
+                    client_data["controls"].remove("down")
+            if keys[pygame.K_a]:
+                if not ("a" in client_data["controls"]):
+                    client_data["controls"].append("a")
+            else:
+                if "a" in client_data["controls"]:
+                    client_data["controls"].remove("a")
+
+
         if user == "server":
             players_controls[config["ip"]] = client_data
-
 
         if user == "server":
             keys_ip = server_global_data["players"]
@@ -587,11 +611,15 @@ def game(user):
                     music_stopped = True
                     pygame.mixer.music.pause()
                     pygame.mixer.Sound.play(lose_sound)
+
+        if rules_read == False:
+            gameDisplay.blit(rules_image, [display_width // 2 - rules_image.get_width() // 2, display_height // 2 - rules_image.get_height() // 2])
+            if button('OK AND GO', display_width // 2  - get_button_size('OK AND GO')[0] // 2, display_height // 2 - get_button_size('OK AND GO')[1] // 2 + 110 , get_button_size('OK AND GO')[0], get_button_size('OK AND GO')[1], white, yellow):
+                rules_read = True
         #апдейтим экран
         pygame.display.flip()
         #######
-        clock.tick(50)
-
+        clock.tick(30)
 
 def error_gui(error_str):
     while True:
@@ -630,10 +658,10 @@ def connect_gui():
                     ip_to_connect += chr(event.key)
         #Rendering
         gameDisplay.blit(background, (0,0))
-        if (button('BACK', display_width // 2 - get_button_size('BACK')[0] - display_width // 8, button_begin_y + 3 * button_interval, get_button_size('BACK')[0], get_button_size('EXIT')[1], white, yellow)):
+        if (button('BACK', display_width // 2 - get_button_size('BACK')[0] - display_width // 8, button_begin_y + 4 * button_interval, get_button_size('BACK')[0], get_button_size('EXIT')[1], white, yellow)):
             #socket closing and stop threads
             return 0
-        if (button('CONNECT', display_width // 2 + display_width // 8, button_begin_y + 3 * button_interval, get_button_size('CONNECT')[0], get_button_size('CONNECT')[1], white, white)):
+        if (button('CONNECT', display_width // 2 + display_width // 8, button_begin_y + 4 * button_interval, get_button_size('CONNECT')[0], get_button_size('CONNECT')[1], white, white)):
             client_room()
             return 0
         smallfont = pygame.font.Font('media/fonts/pixelfont.ttf',40)
@@ -699,10 +727,10 @@ def draw_room_gui(user):
             rendered_text = smallfont.render(name_list[i_name], True, white)
             gameDisplay.blit(rendered_text, [display_width // 2 - rendered_text.get_width() // 2, display_height // 3 + 50 * i_name])
 
-        if (button('BACK', display_width // 2 - get_button_size('BACK')[0] - display_width // 8, button_begin_y + 3 * button_interval, get_button_size('BACK')[0], get_button_size('EXIT')[1], white, yellow)):
+        if (button('BACK', display_width // 2 - get_button_size('BACK')[0] - display_width // 8, button_begin_y + 4 * button_interval, get_button_size('BACK')[0], get_button_size('EXIT')[1], white, yellow)):
             break
         if user == 'server':
-            if (button('START', display_width // 2 + display_width // 8, button_begin_y + 3 * button_interval, get_button_size('START')[0], get_button_size('START')[1], white, yellow)):
+            if (button('START', display_width // 2 + display_width // 8, button_begin_y + 4 * button_interval, get_button_size('START')[0], get_button_size('START')[1], white, yellow)):
                 server_global_data["game_status"] = "progress"
         pygame.display.flip()
         #######
