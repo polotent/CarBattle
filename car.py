@@ -80,10 +80,10 @@ class Car(pygame.sprite.Sprite):
         self.rotating = False
         self.speed = 0.0
         self.maxspeed = 8.5
-        self.minspeed = -6.85
+        self.minspeed = -5.85
         self.acceleration = 0.3
-        self.deacceleration = 0.3
-        self.softening = 0.04
+        self.deacceleration = 0.4
+        self.softening = 0.14
         self.steering = 7.60
 
         self.coll_go_forward = False
@@ -162,10 +162,10 @@ class Car(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         #self.x, self.y = self.prev_x, self.prev_y
         if self.speed > 0 and (not self.coll_go_forward):
-            self.speed = self.minspeed
+            self.speed = self.minspeed // 2
             self.coll_go_backward = True
         if self.speed < 0 and (not self.coll_go_backward):
-            self.speed = -self.minspeed
+            self.speed = -self.minspeed // 2
             self.coll_go_forward = True
     def check_wall_collide(self,spriteGroup):
         if pygame.sprite.spritecollide(self, spriteGroup, False, pygame.sprite.collide_mask):

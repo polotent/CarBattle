@@ -1,4 +1,4 @@
-import socket, threading, json, ast, sys, time
+import socket, threading, json, ast, sys, time, random
 import pygame, time
 import camera, car, maps, bullet, gui
 #graphical variables
@@ -6,11 +6,11 @@ pygame.init()
 infoObject = pygame.display.Info()
 display_width = infoObject.current_w
 display_height = infoObject.current_h
-display_width = 700
-display_height = 500
+#display_width = 700
+#display_height = 500
 center_w = display_width // 2
 center_h = display_height // 2
-gameDisplay = pygame.display.set_mode((display_width, display_height))
+gameDisplay = pygame.display.set_mode((display_width, display_height),pygame.FULLSCREEN)
 pygame.display.set_caption = ('CarBattle')
 pygame.display.iconify
 clock = pygame.time.Clock()
@@ -26,12 +26,13 @@ button_width = 120
 button_height = 50
 button_interval = display_height // 8
 button_begin_y = display_height // 3
-
-
 #logo
 logo_image = pygame.transform.scale(pygame.image.load("media/images/logo.png"), [display_width // 2, display_height // 4])
+#rules
 rules_image = pygame.image.load("media/images/rules.png")
 
+port = 0
+ports_used = [0]
 #global sockets
 sock_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -119,8 +120,12 @@ with open('config/config.json','r') as json_file:
     config = json.load(json_file)
     client_data["name"] = config["name"]
 ip_to_connect = ""
+port_to_connect = 0
+port_to_connect_str = ""
 
 def init_vars():
+    global sock_client
+    global sock_server
     global config
     global server_global_data
     global client_global_data
@@ -138,6 +143,11 @@ def init_vars():
     global dead_players
     global disconnected_players
     global rules_read
+    sock_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock_client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
     rules_read = False
 
     user_number = 0
@@ -213,8 +223,14 @@ def add_user(ip,name = None):
     global user_number
     global cars_sprites
     global server_global_data
-    user_number += 1
-    server_global_data["players"][ip] = start_values[str(user_number)]
+    bool1 = True
+    keys = server_global_data["players"].keys()
+    for key in keys:
+        if key == ip:
+            bool1 = False
+    if bool1:
+        user_number += 1
+        server_global_data["players"][ip] = start_values[str(user_number)]
     server_global_data["status"][ip] = "connected"
     if name != None:
         server_global_data["names"][ip] = name
@@ -224,6 +240,8 @@ def remove_user(ip):
     global car_draw_obj
     global cars_obj
     global disconnected_players
+    global user_number
+    user_number -= 1
     if server_global_data["players"][ip][0] not in disconnected_players:
         disconnected_players.append(server_global_data["players"][ip][0])
     server_global_data["status"][ip] = "disconnected"
@@ -238,7 +256,7 @@ def new_client(clientsocket,addr):
             msg = clientsocket.recv(1024)
         except ConnectionResetError:
             #delete client from client listen
-            #and if the game is in progress then delete his car and
+            #and if the game is in progress then delete his car
             remove_user(addr[0])
             return 0
         get_data =  msg.decode('utf-8')
@@ -247,6 +265,7 @@ def new_client(clientsocket,addr):
             server_global_data["names"][addr[0]] = get_data["name"]
         except:
             remove_user(addr[0])
+            return 0
         players_controls[addr[0]] = get_data
         #sending back global data
         send_data = str(server_global_data)
@@ -254,13 +273,17 @@ def new_client(clientsocket,addr):
             clientsocket.send(send_data.encode('utf-8'))
         except:
             remove_user(addr[0])
-    clientsocket.close()
+            return 0
 def server():
     global sock_server
     global exception_caught
     global server_running
+    global port
+    global ports_used
     host = config["ip"]
-    port = 8888
+    while port in ports_used:
+        port = random.randint(5000,9999)
+    ports_used.append(port)
     print('Server started. Host : ', host,', Port : ',port)
     print('Waiting for clients...')
     try:
@@ -270,14 +293,11 @@ def server():
         server_running = False
         exception_caught = True
         return 0
-
-    #check if this works
-    #add_user(config["ip"],config["name"])
     while True:
         try:
             c, addr = sock_server.accept()
         except:
-            return 0
+            break
         server_thread = threading.Thread(target=new_client,args=(c,addr))
         server_thread.daemon = True
         server_thread.start()
@@ -290,7 +310,7 @@ def client():
     global client_running
     global disconnected_caught
     client = ip_to_connect
-    port = 8888
+    port = port_to_connect
     try:
         sock_client.connect((client,port))
     except:
@@ -298,6 +318,7 @@ def client():
         exception_caught = True
         return 0
     print('Client started. Connected to host : ', client,', Port : ',port)
+    timer_started = False
     while True:
         #sending local data to server
         send_data = str(client_data)
@@ -305,24 +326,23 @@ def client():
             sock_client.send(send_data.encode('utf-8'))
         except:
             client_running = False
-            disconnected_caught = True
-            return 0
+            #disconnected_caught = True
+            break
         #getting data from server
         try:
             msg = sock_client.recv(1024)
         except:
             client_running = False
-            disconnected_caught = True
-            return 0
+            #disconnected_caught = True
+            break
         get_data =  msg.decode('utf-8')
         try:
             get_data = ast.literal_eval(get_data)
         except:
             client_running = False
             disconnected_caught = True
-            return 0
+            break
         client_global_data = get_data
-    sock_client.close()
 #-----------------WAITING ROOMS-------------------------
 def server_room():
     global sock_server
@@ -342,13 +362,16 @@ def client_room():
         client_running = True
         t_client = threading.Thread(target=client)
         t_client.start()
-
     draw_room_gui('client')
 
 def connect_to_room():
     connect_gui()
 
 def game(user):
+    global sock_client
+    global sock_server
+    global server_running
+    global client_running
     global server_global_data
     global client_data
     global players_controls
@@ -427,6 +450,7 @@ def game(user):
             if disconnected_caught == True:
                 disconnected_caught = False
                 error_gui("CONNECTION LOST")
+                break
         if user == "server":
             players_ip = server_global_data["players"].keys()
         else:
@@ -570,7 +594,8 @@ def game(user):
             if (car_draw_obj[client_car_color].y + center_h >= game_map.map_height):
                 car_draw_obj[client_car_color].y = (car_draw_obj[client_car_color].y - cam.y)
         #updating camera position
-        cam.set_pos(cam_x, cam_y)
+        if car_draw_obj[client_car_color].health != 0:
+            cam.set_pos(cam_x, cam_y)
 
 
         #заливка пустым цветом
@@ -604,18 +629,30 @@ def game(user):
             #отрисовываем слой 2 : интерфейс
             user_gui.draw(car_draw_obj[client_car_color].health, car_draw_obj[client_car_color].name,"win")
             if button('EXIT', display_width  - get_button_size('EXIT')[0] - 15, display_height - get_button_size('EXIT')[1] - 15 , get_button_size('EXIT')[0], get_button_size('EXIT')[1], white, yellow):
+                if user == "server":
+                    #sock_server.close()
+                    server_running = False
+                else:
+                    sock_client.close()
+                    client_running = False
                 pygame.mixer.pause()
-                #break
-                pygame.quit()
-                quit()
+                break
+                #pygame.quit()
+                #quit()
         else:
             user_gui.draw(car_draw_obj[client_car_color].health, car_draw_obj[client_car_color].name)
             if car_draw_obj[client_car_color].health == 0:
                 if button('EXIT', display_width  - get_button_size('EXIT')[0] - 15, display_height - get_button_size('EXIT')[1] - 15 , get_button_size('EXIT')[0], get_button_size('EXIT')[1], white, yellow):
+                    if user == "server":
+                        #sock_server.close()
+                        server_running = False
+                    else:
+                        sock_client.close()
+                        client_running = False
                     pygame.mixer.pause()
-                    #break
-                    pygame.quit()
-                    quit()
+                    break
+                    #pygame.quit()
+                    #quit()
                 if music_stopped == False:
                     music_stopped = True
                     pygame.mixer.music.pause()
@@ -629,6 +666,10 @@ def game(user):
         pygame.display.flip()
         #######
         clock.tick(30)
+
+def wait_time():
+    time.sleep(5)
+
 
 def error_gui(error_str):
     while True:
@@ -654,6 +695,9 @@ def error_gui(error_str):
 #--------------------GUI--------------------------------
 def connect_gui():
     global ip_to_connect
+    global port_to_connect
+    global port_to_connect_str
+    correcting = "1"
     while True:
         #Check for exit
         for event in pygame.event.get():
@@ -662,20 +706,57 @@ def connect_gui():
                 quit()
             if event.type == pygame.KEYDOWN:
                 if event.key==pygame.K_BACKSPACE:
-                    ip_to_connect = ip_to_connect[0:len(ip_to_connect)-1]
+                    if correcting == "1":
+                        ip_to_connect = ip_to_connect[0:len(ip_to_connect)-1]
+                    else:
+                        port_to_connect_str = port_to_connect_str[0:len(port_to_connect_str)-1]
                 else :
-                    ip_to_connect += chr(event.key)
+                    if correcting == "1":
+                        ip_to_connect += chr(event.key)
+                    else:
+                        port_to_connect_str += chr(event.key)
+
+        mouse = pygame.mouse.get_pos()
+        click = pygame.mouse.get_pressed()
         #Rendering
         gameDisplay.blit(background, (0,0))
+
+        smallfont = pygame.font.Font('media/fonts/pixelfont.ttf',40)
+        rendered_text = smallfont.render('CONNECT TO ROOM ', True, white)
+        gameDisplay.blit(rendered_text, [display_width // 2 - rendered_text.get_width() // 2, display_height // 6])
+        if correcting == '1':
+            rendered_text1 = smallfont.render('ROOM IP : ' + ip_to_connect + '_', True, yellow)
+            rendered_text2 = smallfont.render('PORT : ' + port_to_connect_str, True, white)
+
+            if display_width // 2 - rendered_text2.get_width() // 2 < mouse[0] < display_width // 2 + rendered_text2.get_width() // 2 and display_height // 6 + 3 * button_interval < mouse[1] < display_height // 6 + 3 * button_interval + rendered_text2.get_height():
+                smallfont = pygame.font.Font('media/fonts/pixelfont.ttf',42)
+                if click[0] == 1:
+                    correcting = "2"
+
+        else :
+            rendered_text1 = smallfont.render('ROOM IP : ' + ip_to_connect, True, white)
+            rendered_text2 = smallfont.render('PORT : ' + port_to_connect_str + '_', True, yellow)
+
+            if display_width // 2 - rendered_text1.get_width() // 2 < mouse[0] < display_width // 2 + rendered_text1.get_width() // 2 and display_height // 6 + 2 * button_interval < mouse[1] < display_height // 6 + 2 * button_interval + rendered_text1.get_height():
+                smallfont = pygame.font.Font('media/fonts/pixelfont.ttf',42)
+                if click[0] == 1:
+                    correcting = "1"
+
+        gameDisplay.blit(rendered_text1, [display_width // 2 - rendered_text1.get_width() // 2, display_height // 6 + 2* button_interval])
+        gameDisplay.blit(rendered_text2, [display_width // 2 - rendered_text2.get_width() // 2, display_height // 6 + 3 * button_interval])
+
         if (button('BACK', display_width // 2 - get_button_size('BACK')[0] - display_width // 8, button_begin_y + 4 * button_interval, get_button_size('BACK')[0], get_button_size('EXIT')[1], white, yellow)):
             #socket closing and stop threads
             return 0
         if (button('CONNECT', display_width // 2 + display_width // 8, button_begin_y + 4 * button_interval, get_button_size('CONNECT')[0], get_button_size('CONNECT')[1], white, white)):
+            try:
+                port_to_connect = int(port_to_connect_str)
+            except:
+                error_gui("PORT MUST BE AN INT TYPE")
+                break
+
             client_room()
             return 0
-        smallfont = pygame.font.Font('media/fonts/pixelfont.ttf',40)
-        rendered_text = smallfont.render('ROOM IP : ' + ip_to_connect + '_', True, yellow)
-        gameDisplay.blit(rendered_text, [display_width // 2 - rendered_text.get_width() // 2, display_height // 2])
         pygame.display.flip()
         #######
         clock.tick(30)
@@ -683,10 +764,15 @@ def connect_gui():
 def draw_room_gui(user):
     global exception_caught
     global disconnected_caught
+    global port
+    global server_running
+    global client_running
+    global sock_client
+    global sock_server
     while True:
         if user == "server":
             if exception_caught == True:
-                error_gui("PORT IS ALREADY IN USE")
+                error_gui("PORT IS ALREADY IN USE OR WRONG LOCAL IP")
                 exception_caught = False
                 return 0
         else:
@@ -717,9 +803,12 @@ def draw_room_gui(user):
         smallfont = pygame.font.Font('media/fonts/pixelfont.ttf',40)
         if user == 'server':
             rendered_text = smallfont.render('ROOM ' + config["ip"], True, white)
+            rendered_text1 = smallfont.render('( PORT ' + str(port) + " )", True, white)
         else :
             rendered_text = smallfont.render('ROOM ' + ip_to_connect, True, white)
+            rendered_text1 = smallfont.render('( PORT ' + str(port_to_connect) + " )", True, white)
         gameDisplay.blit(rendered_text, [display_width // 2 - rendered_text.get_width() // 2, display_height // 6])
+        gameDisplay.blit(rendered_text1, [display_width // 2 - rendered_text1.get_width() // 2, display_height // 6 + 45])
         #list of clients including server one
         if user == 'server':
             name_list = []
@@ -737,6 +826,12 @@ def draw_room_gui(user):
             gameDisplay.blit(rendered_text, [display_width // 2 - rendered_text.get_width() // 2, display_height // 3 + 50 * i_name])
 
         if (button('BACK', display_width // 2 - get_button_size('BACK')[0] - display_width // 8, button_begin_y + 4 * button_interval, get_button_size('BACK')[0], get_button_size('EXIT')[1], white, yellow)):
+            if user == "server":
+                sock_server.close()
+                server_running = False
+            else:
+                sock_client.close()
+                client_running = False
             break
         if user == 'server':
             if (button('START', display_width // 2 + display_width // 8, button_begin_y + 4 * button_interval, get_button_size('START')[0], get_button_size('START')[1], white, yellow)):
@@ -800,13 +895,18 @@ def config_gui():
         if (button('BACK', display_width // 2 - get_button_size('BACK')[0] - display_width // 8, button_begin_y + 4 * button_interval, get_button_size('BACK')[0], get_button_size('EXIT')[1], white, yellow)):
             break
 
-        if (button('SAVE and EXIT', display_width // 2 , button_begin_y + 4 * button_interval, get_button_size('SAVE and EXIT')[0], get_button_size('SAVE and EXIT')[1], white, yellow)):
+        if (button('SAVE', display_width // 2 + get_button_size("SAVE")[0], button_begin_y + 4 * button_interval, get_button_size('SAVE')[0], get_button_size('SAVE')[1], white, yellow)):
             config = {'name': name_str,'ip': ip_str}
             with open('config/config.json','w') as json_file:
                 json.dump(config,json_file)
-            #saveing file
-            pygame.quit()
-            quit()
+            #saving file
+
+            #loading new data
+            with open('config/config.json','r') as json_file:
+                config = json.load(json_file)
+                client_data["name"] = config["name"]
+
+            break
         pygame.display.flip()
         #######
         clock.tick(30)
@@ -837,7 +937,7 @@ while True:
         gameDisplay.blit(rendered_text, [display_width // 2 - rendered_text.get_width() // 2, button_begin_y])
 
 
-    if button('CONFIG' , display_width // 2 - get_button_size('CONFIG')[0] // 2, button_begin_y + 2 * button_interval, get_button_size('CONFIG')[0], get_button_size('CONFIG')[1], white, yellow):
+    if button('CONFIGURATION' , display_width // 2 - get_button_size('CONFIGURATION')[0] // 2, button_begin_y + 2 * button_interval, get_button_size('CONFIGURATION')[0], get_button_size('CONFIGURATION')[1], white, yellow):
         config_gui()
     if button('EXIT', display_width // 2 - get_button_size('EXIT')[0] // 2, button_begin_y + 3 * button_interval, get_button_size('EXIT')[0], get_button_size('EXIT')[1], white, yellow):
         pygame.quit()
