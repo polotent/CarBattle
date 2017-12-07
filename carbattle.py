@@ -6,11 +6,11 @@ pygame.init()
 infoObject = pygame.display.Info()
 display_width = infoObject.current_w
 display_height = infoObject.current_h
-#display_width = 700
-#display_height = 500
+display_width = 700
+display_height = 500
 center_w = display_width // 2
 center_h = display_height // 2
-gameDisplay = pygame.display.set_mode((display_width, display_height),pygame.FULLSCREEN)
+gameDisplay = pygame.display.set_mode((display_width, display_height))
 pygame.display.set_caption = ('CarBattle')
 pygame.display.iconify
 clock = pygame.time.Clock()
@@ -121,6 +121,7 @@ with open('config/config.json','r') as json_file:
 ip_to_connect = ""
 
 def init_vars():
+    global config
     global server_global_data
     global client_global_data
     global bullets_obj
@@ -152,13 +153,18 @@ def init_vars():
         "bullets" : [],
         "status" : {}
     }
-    add_user(config["ip"],config["name"])
-
     players_controls = {}
     client_data = {
         "name" : "",
         "controls" : []
     }
+    with open('config/config.json','r') as json_file:
+        config = json.load(json_file)
+        client_data["name"] = config["name"]
+
+
+    add_user(config["ip"],config["name"])
+
     client_global_data = {
         "game_status" : "wait",
         "players" : {
@@ -266,7 +272,7 @@ def server():
         return 0
 
     #check if this works
-    add_user(config["ip"],config["name"])
+    #add_user(config["ip"],config["name"])
     while True:
         try:
             c, addr = sock_server.accept()
@@ -319,21 +325,24 @@ def client():
     sock_client.close()
 #-----------------WAITING ROOMS-------------------------
 def server_room():
+    global sock_server
     global server_running
+    init_vars()
     if server_running == False:
         server_running = True
         t_server = threading.Thread(target=server)
         t_server.start()
-    else:
-        init_vars()
     draw_room_gui('server')
 
 def client_room():
+    global sock_client
     global client_running
+    init_vars()
     if client_running == False:
         client_running = True
         t_client = threading.Thread(target=client)
         t_client.start()
+
     draw_room_gui('client')
 
 def connect_to_room():
@@ -788,10 +797,10 @@ def config_gui():
         gameDisplay.blit(rendered_text2, [display_width // 2 - rendered_text2.get_width() // 2, display_height // 6 + 2 * button_interval])
 
 
-        if (button('BACK', display_width // 2 - get_button_size('BACK')[0] - display_width // 8, button_begin_y + 3 * button_interval, get_button_size('BACK')[0], get_button_size('EXIT')[1], white, yellow)):
+        if (button('BACK', display_width // 2 - get_button_size('BACK')[0] - display_width // 8, button_begin_y + 4 * button_interval, get_button_size('BACK')[0], get_button_size('EXIT')[1], white, yellow)):
             break
 
-        if (button('SAVE and EXIT', display_width // 2 , button_begin_y + 3 * button_interval, get_button_size('SAVE and EXIT')[0], get_button_size('SAVE and EXIT')[1], white, yellow)):
+        if (button('SAVE and EXIT', display_width // 2 , button_begin_y + 4 * button_interval, get_button_size('SAVE and EXIT')[0], get_button_size('SAVE and EXIT')[1], white, yellow)):
             config = {'name': name_str,'ip': ip_str}
             with open('config/config.json','w') as json_file:
                 json.dump(config,json_file)
