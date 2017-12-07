@@ -291,7 +291,7 @@ def client():
         client_running = False
         exception_caught = True
         return 0
-    print('Client started. Connected to host : ', host,', Port : ',port)
+    print('Client started. Connected to host : ', client,', Port : ',port)
     while True:
         #sending local data to server
         send_data = str(client_data)
