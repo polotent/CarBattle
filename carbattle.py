@@ -596,17 +596,17 @@ def game(user):
             user_gui.draw(car_draw_obj[client_car_color].health, car_draw_obj[client_car_color].name,"win")
             if button('EXIT', display_width  - get_button_size('EXIT')[0] - 15, display_height - get_button_size('EXIT')[1] - 15 , get_button_size('EXIT')[0], get_button_size('EXIT')[1], white, yellow):
                 pygame.mixer.pause()
-                break
-                #pygame.quit()
-                #quit()
+                #break
+                pygame.quit()
+                quit()
         else:
             user_gui.draw(car_draw_obj[client_car_color].health, car_draw_obj[client_car_color].name)
             if car_draw_obj[client_car_color].health == 0:
                 if button('EXIT', display_width  - get_button_size('EXIT')[0] - 15, display_height - get_button_size('EXIT')[1] - 15 , get_button_size('EXIT')[0], get_button_size('EXIT')[1], white, yellow):
                     pygame.mixer.pause()
-                    break
-                    #pygame.quit()
-                    #quit()
+                    #break
+                    pygame.quit()
+                    quit()
                 if music_stopped == False:
                     music_stopped = True
                     pygame.mixer.music.pause()
