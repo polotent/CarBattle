@@ -19,13 +19,13 @@ class GameGUI():
 
         if lifes == 0:
             rendered_text = self.font.render("GAME OVER", True, white)
-            pygame.draw.rect(self.display, white, [self.width // 2- rendered_text.get_width() // 2 - 34, self.height // 2 - rendered_text.get_height() // 2 - 74,240,73])
-            pygame.draw.rect(self.display, grey, [self.width // 2- rendered_text.get_width() // 2 - 30, self.height // 2 - rendered_text.get_height() // 2 - 70,230,65])
-            self.display.blit(rendered_text, [self.width // 2- rendered_text.get_width() // 2, self.height // 2 - 2 * rendered_text.get_height()])
+            pygame.draw.rect(self.display, white, [self.width // 2- rendered_text.get_width() // 2 - 34, self.height // 2 - rendered_text.get_height() // 2 - 150,240,73])
+            pygame.draw.rect(self.display, grey, [self.width // 2- rendered_text.get_width() // 2 - 30, self.height // 2 - rendered_text.get_height() // 2 - 146,230,65])
+            self.display.blit(rendered_text, [self.width // 2- rendered_text.get_width() // 2, self.height // 2 - 4 * rendered_text.get_height()])
             #погриаться с рамками для эксита
 
         if win != None:
             rendered_text = self.font.render("YOU WIN", True, white)
-            pygame.draw.rect(self.display, white, [self.width // 2- rendered_text.get_width() // 2 - 34, self.height // 2 - rendered_text.get_height() // 2 - 74,210,73])
-            pygame.draw.rect(self.display, grey, [self.width // 2- rendered_text.get_width() // 2 - 30, self.height // 2 - rendered_text.get_height() // 2 - 70,200,65])
-            self.display.blit(rendered_text, [self.width // 2- rendered_text.get_width() // 2, self.height // 2 - 2 * rendered_text.get_height()])
+            pygame.draw.rect(self.display, white, [self.width // 2- rendered_text.get_width() // 2 - 34, self.height // 2 - rendered_text.get_height() // 2 - 150,210,73])
+            pygame.draw.rect(self.display, grey, [self.width // 2- rendered_text.get_width() // 2 - 30, self.height // 2 - rendered_text.get_height() // 2 - 146,200,65])
+            self.display.blit(rendered_text, [self.width // 2- rendered_text.get_width() // 2, self.height // 2 - 4 * rendered_text.get_height()])

@@ -81,8 +81,8 @@ class Car(pygame.sprite.Sprite):
         self.speed = 0.0
         self.maxspeed = 8.5
         self.minspeed = -6.85
-        self.acceleration = 0.7
-        self.deacceleration = 0.7
+        self.acceleration = 0.3
+        self.deacceleration = 0.3
         self.softening = 0.04
         self.steering = 7.60
 
