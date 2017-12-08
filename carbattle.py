@@ -122,7 +122,18 @@ with open('config/config.json','r') as json_file:
 ip_to_connect = ""
 port_to_connect = 0
 port_to_connect_str = ""
+#getting local ip
+def get_local_ip():
+    sock_ip = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock_ip.connect(("8.8.8.8", 4999))
+    return_value = sock_ip.getsockname()[0]
+    sock_ip.close()
+    return return_value
 
+if config["ip"] == "":
+    config["ip"] = get_local_ip()
+    with open('config/config.json','w') as json_file:
+        json.dump(config,json_file)
 def init_vars():
     global sock_client
     global sock_server
@@ -925,7 +936,7 @@ while True:
         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
             pygame.quit()
             quit()
-    if config["name"] != "" and config["ip"] != "":
+    if config["name"] != "":
 
         if button('CREATE ROOM', display_width // 2 - get_button_size('CREATE ROOM')[0] // 2, button_begin_y, get_button_size('CREATE ROOM')[0], get_button_size('CREATE ROOM')[1], white, yellow):
             server_room()
