@@ -6,11 +6,11 @@ pygame.init()
 infoObject = pygame.display.Info()
 display_width = infoObject.current_w
 display_height = infoObject.current_h
-#display_width = 700
-#display_height = 500
+display_width = 700
+display_height = 500
 center_w = display_width // 2
 center_h = display_height // 2
-gameDisplay = pygame.display.set_mode((display_width, display_height),pygame.FULLSCREEN)
+gameDisplay = pygame.display.set_mode((display_width, display_height))
 pygame.display.set_caption = ('CarBattle')
 pygame.display.iconify
 clock = pygame.time.Clock()
@@ -295,8 +295,7 @@ def server():
     while port in ports_used:
         port = random.randint(5000,9999)
     ports_used.append(port)
-    print('Server started. Host : ', host,', Port : ',port)
-    print('Waiting for clients...')
+    #print('Server started. Host : ', host,', Port : ',port)
     try:
         sock_server.bind((host, port))
         sock_server.listen(4)
@@ -313,6 +312,8 @@ def server():
         server_thread.daemon = True
         server_thread.start()
 # ----------------CLIENT--------------------------
+def wait_time():
+    time.sleep(2)
 def client():
     global sock_client
     global client_global_data
@@ -328,7 +329,7 @@ def client():
         client_running = False
         exception_caught = True
         return 0
-    print('Client started. Connected to host : ', client,', Port : ',port)
+    #print('Client started. Connected to host : ', client,', Port : ',port)
     timer_started = False
     while True:
         #sending local data to server
@@ -338,14 +339,31 @@ def client():
         except:
             client_running = False
             #disconnected_caught = True
-            break
+            if timer_started == False:
+                timer_started
+                t_timer = threading.Thread(target=wait_time)
+                t_timer.start()
+            #break
+        if timer_started == True:
+            if not t_timer.isAlive():
+                timer_started = False
+                disconnected_caught = True
         #getting data from server
         try:
             msg = sock_client.recv(1024)
         except:
             client_running = False
             #disconnected_caught = True
-            break
+            if timer_started == False:
+                timer_started
+                t_timer = threading.Thread(target=wait_time)
+                t_timer.start()
+            #break
+        if timer_started == True:
+            if not t_timer.isAlive():
+                timer_started = False
+                disconnected_caught = True
+                break
         get_data =  msg.decode('utf-8')
         try:
             get_data = ast.literal_eval(get_data)
@@ -677,10 +695,6 @@ def game(user):
         pygame.display.flip()
         #######
         clock.tick(30)
-
-def wait_time():
-    time.sleep(5)
-
 
 def error_gui(error_str):
     while True:
