@@ -188,7 +188,7 @@ def init_vars():
 
     client_global_data = {
         "game_status" : "wait",
-        "players" : {
+        "players" : {user_number
         },
         "names" : {
         },
@@ -304,13 +304,14 @@ def server():
         exception_caught = True
         return 0
     while True:
-        try:
-            c, addr = sock_server.accept()
-        except:
-            break
-        server_thread = threading.Thread(target=new_client,args=(c,addr))
-        server_thread.daemon = True
-        server_thread.start()
+        if user_number < 4:
+            try:
+                c, addr = sock_server.accept()
+            except:
+                break
+            server_thread = threading.Thread(target=new_client,args=(c,addr))
+            server_thread.daemon = True
+            server_thread.start()
 # ----------------CLIENT--------------------------
 def wait_time():
     time.sleep(2)
