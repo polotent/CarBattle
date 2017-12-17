@@ -6,11 +6,11 @@ pygame.init()
 infoObject = pygame.display.Info()
 display_width = infoObject.current_w
 display_height = infoObject.current_h
-display_width = 700
-display_height = 500
+#display_width = 700
+#display_height = 500
 center_w = display_width // 2
 center_h = display_height // 2
-gameDisplay = pygame.display.set_mode((display_width, display_height))
+gameDisplay = pygame.display.set_mode((display_width, display_height),pygame.FULLSCREEN)
 pygame.display.set_caption = ('CarBattle')
 pygame.display.iconify
 clock = pygame.time.Clock()
@@ -87,10 +87,10 @@ bonuses_draw_obj = []
 
 #car_type, health, x,y, angle
 start_values = {
-    "1" : ["yellow",num_of_lifes,600,400,180,bull_timeout,False,False],
-    "2" : ["red",num_of_lifes,1540,330,180,bull_timeout,False,False],
-    "3" : ["blue",num_of_lifes,1710,1880,90,bull_timeout,False,False],
-    "4" : ["green",num_of_lifes,160,1850,0,bull_timeout,False,False]
+    "1" : ["yellow",num_of_lifes,600,400,180,bull_timeout,0,0],
+    "2" : ["red",num_of_lifes,1540,330,180,bull_timeout,0,0],
+    "3" : ["blue",num_of_lifes,1710,1880,90,bull_timeout,0,0],
+    "4" : ["green",num_of_lifes,160,1850,0,bull_timeout,0,0]
 }
 
 bonus_values = {
@@ -618,7 +618,7 @@ def game(user):
                 if not cars_obj[server_global_data["players"][key][0]].check_wall_collide(collision_map_s):
                     cars_obj[server_global_data["players"][key][0]].update_global()
                 cars_obj[server_global_data["players"][key][0]].update()
-                n_lst = [server_global_data["players"][key][0],cars_obj[server_global_data["players"][key][0]].health,cars_obj[server_global_data["players"][key][0]].global_x,cars_obj[server_global_data["players"][key][0]].global_y,cars_obj[server_global_data["players"][key][0]].dir,cars_obj[server_global_data["players"][key][0]].weapon_upgraded,cars_obj[server_global_data["players"][key][0]].bubbled]
+                n_lst = [server_global_data["players"][key][0],cars_obj[server_global_data["players"][key][0]].health,cars_obj[server_global_data["players"][key][0]].global_x,cars_obj[server_global_data["players"][key][0]].global_y,cars_obj[server_global_data["players"][key][0]].dir,cars_obj[server_global_data["players"][key][0]].weapon_timeout,cars_obj[server_global_data["players"][key][0]].bubble_timeout]
                 server_global_data["players"][key] = n_lst
 
 

@@ -12,6 +12,7 @@ class GameGUI():
         white   = (255,255,255)
         grey = (55, 58, 61)
         black   = (  0,  0,  0)
+        green = (52, 212, 53)
         pygame.draw.rect(self.display, white, [0,0,207,87])
         pygame.draw.rect(self.display, grey, [0,0,200,80])
         rendered_text = self.font.render(name, True, white)
@@ -22,9 +23,12 @@ class GameGUI():
         pygame.draw.rect(self.display, white, [0,self.height - 60,110,self.height])
         pygame.draw.rect(self.display, grey, [0,self.height - 52,102,self.height])
 
-        if weaponed:
+
+        if weaponed != 0:
+            pygame.draw.arc(self.display, green, (1, self.height - 45, self.weapon_image.get_width()+8, self.weapon_image.get_height()+8), 1.57 - weaponed * (6.28 / 350), 1.57, 4)
             self.display.blit(self.weapon_image, [5,self.height - 42])
-        if bubbled:
+        if bubbled != 0:
+            pygame.draw.arc(self.display, green, (51, self.height - 45, self.shield_image.get_width()+8, self.shield_image.get_height()+8), 1.57 - bubbled * (6.28 / 350), 1.57, 4)
             self.display.blit(self.shield_image, [55,self.height - 42])
 
         if lifes == 0:
