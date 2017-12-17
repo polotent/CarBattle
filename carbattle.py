@@ -1,6 +1,6 @@
 import socket, threading, json, ast, sys, time, random
 import pygame, time
-import camera, car, maps, bullet, gui
+import camera, car, maps, bullet, bonus, gui
 #graphical variables
 pygame.init()
 infoObject = pygame.display.Info()
@@ -51,6 +51,7 @@ server_global_data = {
     "names" : {
     },
     "bullets" : [],
+    "bonuses" : [],
     "status" : {}
 }
 players_controls = {
@@ -69,6 +70,7 @@ client_global_data = {
     "names" : {
     },
     "bullets" : [],
+    "bonuses" : [],
     "status" : {}
 }
 
@@ -79,12 +81,22 @@ bull_timeout = 20
 
 num_of_lifes = 5
 
+
+bonuses_obj = []
+bonuses_draw_obj = []
+
 #car_type, health, x,y, angle
 start_values = {
-    "1" : ["yellow",num_of_lifes,600,400,180,bull_timeout],
-    "2" : ["red",num_of_lifes,1540,330,180,bull_timeout],
-    "3" : ["blue",num_of_lifes,1710,1880,90,bull_timeout],
-    "4" : ["green",num_of_lifes,160,1850,0,bull_timeout]
+    "1" : ["yellow",num_of_lifes,600,400,180,bull_timeout,False,False],
+    "2" : ["red",num_of_lifes,1540,330,180,bull_timeout,False,False],
+    "3" : ["blue",num_of_lifes,1710,1880,90,bull_timeout,False,False],
+    "4" : ["green",num_of_lifes,160,1850,0,bull_timeout,False,False]
+}
+
+bonus_values = {
+    "weapon" : [[["weapon",250,390],["weapon",630,1725]]],
+    "medkit" : [[["medkit",1440,608],["medkit",608,608],["medkit",608,1440],["medkit",1440,1440]]],
+    "shield" : [[["shield",1220,380],["shield",1685,1230]]]
 }
 
 car_yellow = car.Car(start_values["1"][0],start_values["1"][1],start_values["1"][2],start_values["1"][3],start_values["1"][4],start_values["1"][5])
@@ -154,6 +166,8 @@ def init_vars():
     global dead_players
     global disconnected_players
     global rules_read
+    global bonuses_obj
+    global bonuses_draw_obj
     sock_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -172,6 +186,7 @@ def init_vars():
         "names" : {
         },
         "bullets" : [],
+        "bonuses" : [],
         "status" : {}
     }
     players_controls = {}
@@ -193,10 +208,14 @@ def init_vars():
         "names" : {
         },
         "bullets" : [],
+        "bonuses" : [],
         "status" : {}
     }
     bullets_obj = []
     bullets_draw_obj = []
+
+    bonuses_obj = []
+    bonuses_draw_obj = []
 
     car_yellow = car.Car(start_values["1"][0],start_values["1"][1],start_values["1"][2],start_values["1"][3],start_values["1"][4],start_values["1"][5])
     car_red = car.Car(start_values["2"][0],start_values["2"][1],start_values["2"][2],start_values["2"][3],start_values["2"][4],start_values["2"][5])
@@ -414,6 +433,8 @@ def game(user):
     global disconnected_caught
     global music_stopped
     global rules_read
+    global bonuses_obj
+    global bonuses_draw_obj
 
     user_gui = gui.GameGUI(gameDisplay)
     pygame.mixer.music.load("media/music/main_theme.wav")
@@ -424,6 +445,17 @@ def game(user):
         players_ip = server_global_data["players"].keys()
     else:
         players_ip = client_global_data["players"].keys()
+
+
+    if user == "server":
+        rng_num = random.randint(0,0)
+        bonus_keys = bonus_values.keys()
+        for bonus_key in bonus_keys:
+            for valarr in bonus_values[bonus_key][rng_num]:
+                newbonus = bonus.Bonus(valarr[0],valarr[1],valarr[2])
+                bonuses_obj.append(newbonus)
+
+
 
     for player_ip in players_ip:
         if user == "server":
@@ -438,19 +470,19 @@ def game(user):
             client_car_color = player_lst[0]
 
         if player_lst[0] == "yellow":
-            car_draw_yellow = car.CarDraw("yellow",player_name,player_lst[1],player_lst[2],player_lst[3],player_lst[4],player_status)
+            car_draw_yellow = car.CarDraw("yellow",player_name,player_lst[1],player_lst[2],player_lst[3],player_lst[4],player_lst[6],player_lst[7],player_status)
             car_draw_obj["yellow"] = car_draw_yellow
             cars_obj["yellow"] = car_yellow
         if player_lst[0] == "red":
-            car_draw_red = car.CarDraw("red",player_name,player_lst[1],player_lst[2],player_lst[3],player_lst[4],player_status)
+            car_draw_red = car.CarDraw("red",player_name,player_lst[1],player_lst[2],player_lst[3],player_lst[4],player_lst[6],player_lst[7],player_status)
             car_draw_obj["red"] = car_draw_red
             cars_obj["red"] = car_red
         if player_lst[0] == "blue":
-            car_draw_blue = car.CarDraw("blue",player_name,player_lst[1],player_lst[2],player_lst[3],player_lst[4],player_status)
+            car_draw_blue = car.CarDraw("blue",player_name,player_lst[1],player_lst[2],player_lst[3],player_lst[4],player_lst[6],player_lst[7],player_status)
             car_draw_obj["blue"] = car_draw_blue
             cars_obj["blue"] = car_blue
         if player_lst[0] == "green":
-            car_draw_green = car.CarDraw("green",player_name,player_lst[1],player_lst[2],player_lst[3],player_lst[4],player_status)
+            car_draw_green = car.CarDraw("green",player_name,player_lst[1],player_lst[2],player_lst[3],player_lst[4],player_lst[6],player_lst[7],player_status)
             car_draw_obj["green"] = car_draw_green
             cars_obj["green"] = car_green
     #setting camera on client
@@ -493,11 +525,13 @@ def game(user):
             else:
                 player_lst = list(client_global_data["players"][player_ip])
                 player_status = client_global_data["status"][player_ip]
-            car_draw_obj[player_lst[0]].update(player_lst[1],player_lst[2],player_lst[3],player_lst[4],player_status)
+            car_draw_obj[player_lst[0]].update(player_lst[1],player_lst[2],player_lst[3],player_lst[4],player_lst[5],player_lst[6],player_status)
         if user == "server":
             bullets_draw_obj = server_global_data["bullets"]
+            bonuses_draw_obj = server_global_data["bonuses"]
         else:
             bullets_draw_obj = client_global_data["bullets"]
+            bonuses_draw_obj = server_global_data["bonuses"]
 
         #Check for exit
         for event in pygame.event.get():
@@ -565,10 +599,10 @@ def game(user):
                     if ("right" in player_data["controls"]) and ("left" not in player_data["controls"]):
                         cars_obj[server_global_data["players"][key][0]].steerright()
                     if ("a" in player_data["controls"]):
-                        if cars_obj[server_global_data["players"][key][0]].current_timeout == bull_timeout:
+                        if cars_obj[server_global_data["players"][key][0]].current_timeout == cars_obj[server_global_data["players"][key][0]].bullet_timeout:
                             new_bullet = bullet.Bullet(cars_obj[server_global_data["players"][key][0]].global_x,cars_obj[server_global_data["players"][key][0]].global_y,cars_obj[server_global_data["players"][key][0]].dir,key)
                             bullets_obj.append(new_bullet)
-                            cars_obj[server_global_data["players"][key][0]].current_timeout = bull_timeout-1
+                            cars_obj[server_global_data["players"][key][0]].current_timeout = cars_obj[server_global_data["players"][key][0]].bullet_timeout-1
                 if (server_global_data["players"][key][0] not in dead_players) and (server_global_data["players"][key][0] not in disconnected_players):
                     #Players collision
                     for car_clr in cars_obj:
@@ -584,7 +618,7 @@ def game(user):
                 if not cars_obj[server_global_data["players"][key][0]].check_wall_collide(collision_map_s):
                     cars_obj[server_global_data["players"][key][0]].update_global()
                 cars_obj[server_global_data["players"][key][0]].update()
-                n_lst = [server_global_data["players"][key][0],cars_obj[server_global_data["players"][key][0]].health,cars_obj[server_global_data["players"][key][0]].global_x,cars_obj[server_global_data["players"][key][0]].global_y,cars_obj[server_global_data["players"][key][0]].dir]
+                n_lst = [server_global_data["players"][key][0],cars_obj[server_global_data["players"][key][0]].health,cars_obj[server_global_data["players"][key][0]].global_x,cars_obj[server_global_data["players"][key][0]].global_y,cars_obj[server_global_data["players"][key][0]].dir,cars_obj[server_global_data["players"][key][0]].weapon_upgraded,cars_obj[server_global_data["players"][key][0]].bubbled]
                 server_global_data["players"][key] = n_lst
 
 
@@ -605,6 +639,35 @@ def game(user):
                 else:
                     bullet_obj.update()
                     server_global_data["bullets"].append([bullet_obj.global_x,bullet_obj.global_y])
+
+
+            server_global_data["bonuses"] = []
+            for bonus_obj in bonuses_obj:
+                bonus_s = pygame.sprite.Group()
+                bonus_s.add(bonus_obj)
+                for car_clr in cars_obj:
+                    if (car_clr not in dead_players) and (car_clr not in disconnected_players):
+                        if cars_obj[car_clr].check_bonus_collide(bonus_s,bonus_obj.bonus_type):
+                            if bonus_obj.bonus_type == "weapon":
+                                if cars_obj[car_clr].weapon_upgraded == False:
+                                    cars_obj[car_clr].weapon_upgrade()
+                                    bonuses_obj.remove(bonus_obj)
+                                    continue
+                            if bonus_obj.bonus_type == "medkit":
+                                if cars_obj[car_clr].health != num_of_lifes:
+                                    cars_obj[car_clr].heal()
+                                    bonuses_obj.remove(bonus_obj)
+                                    continue
+                            if bonus_obj.bonus_type == "shield":
+                                if cars_obj[car_clr].bubbled == False:
+                                    cars_obj[car_clr].defend()
+                                    bonuses_obj.remove(bonus_obj)
+                                    continue
+
+
+                #here will be a check of collision between cars and bonuses
+                server_global_data["bonuses"].append([bonus_obj.bonus_type,bonus_obj.global_x,bonus_obj.global_y])
+
 
         #а теперь мы высчитываем насколько нужно сдвинуть камеру
         cam_x = cam.x
@@ -634,6 +697,14 @@ def game(user):
         game_map.update(cam.x,cam.y)
         game_map_s.draw(gameDisplay)
 
+        #print(cars_obj[client_car_color].global_x, " ", cars_obj[client_car_color].global_y)
+
+
+        #drawing bonuses
+        for bonusXY in bonuses_draw_obj:
+            bonus_to_draw = bonus.BonusDraw(bonusXY[0],bonusXY[1],bonusXY[2])
+            bonus_to_draw.draw(gameDisplay, -cam.x, -cam.y)
+
         #drawing bullets
         for bulletXY in bullets_draw_obj:
             bullet_to_draw = bullet.BulletDraw(bulletXY[0],bulletXY[1])
@@ -646,10 +717,10 @@ def game(user):
             if car_draw_obj[color_key].health != 0 and car_draw_obj[color_key].status != "disconnected":
                 if client_car_color == color_key:
                     possible_win = True
-                    car_draw_obj[color_key].draw(gameDisplay)
+                    car_draw_obj[color_key].draw(gameDisplay,cars_obj[color_key].bubbled)
                 else:
                     other_possible = True
-                    car_draw_obj[color_key].draw(gameDisplay, -cam.x , -cam.y)
+                    car_draw_obj[color_key].draw(gameDisplay, cars_obj[color_key].bubbled, -cam.x , -cam.y)
 
         if (possible_win) and (not other_possible):
             if music_stopped == False:
@@ -657,7 +728,7 @@ def game(user):
                 pygame.mixer.music.pause()
                 pygame.mixer.Sound.play(victory_sound)
             #отрисовываем слой 2 : интерфейс
-            user_gui.draw(car_draw_obj[client_car_color].health, car_draw_obj[client_car_color].name,"win")
+            user_gui.draw(car_draw_obj[client_car_color].health, car_draw_obj[client_car_color].name,car_draw_obj[client_car_color].weapon_upgraded,car_draw_obj[client_car_color].bubbled,"win")
             if button('EXIT', display_width  - get_button_size('EXIT')[0] - 15, display_height - get_button_size('EXIT')[1] - 15 , get_button_size('EXIT')[0], get_button_size('EXIT')[1], white, yellow):
                 if user == "server":
                     #sock_server.close()
@@ -670,7 +741,7 @@ def game(user):
                 #pygame.quit()
                 #quit()
         else:
-            user_gui.draw(car_draw_obj[client_car_color].health, car_draw_obj[client_car_color].name)
+            user_gui.draw(car_draw_obj[client_car_color].health, car_draw_obj[client_car_color].name,car_draw_obj[client_car_color].weapon_upgraded,car_draw_obj[client_car_color].bubbled)
             if car_draw_obj[client_car_color].health == 0:
                 if button('EXIT', display_width  - get_button_size('EXIT')[0] - 15, display_height - get_button_size('EXIT')[1] - 15 , get_button_size('EXIT')[0], get_button_size('EXIT')[1], white, yellow):
                     if user == "server":
