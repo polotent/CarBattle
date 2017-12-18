@@ -717,10 +717,10 @@ def game(user):
             if car_draw_obj[color_key].health != 0 and car_draw_obj[color_key].status != "disconnected":
                 if client_car_color == color_key:
                     possible_win = True
-                    car_draw_obj[color_key].draw(gameDisplay,cars_obj[color_key].bubbled)
+                    car_draw_obj[color_key].draw(gameDisplay,car_draw_obj[color_key].bubbled)
                 else:
                     other_possible = True
-                    car_draw_obj[color_key].draw(gameDisplay, cars_obj[color_key].bubbled, -cam.x , -cam.y)
+                    car_draw_obj[color_key].draw(gameDisplay, car_draw_obj[color_key].bubbled, -cam.x , -cam.y)
 
         if (possible_win) and (not other_possible):
             if music_stopped == False:

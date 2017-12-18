@@ -57,7 +57,7 @@ class CarDraw():
         if cam_x == None and cam_y == None:
 
             display.blit(self.image,[self.x - self.image_w // 2 ,self.y - self.image_h // 2])
-            if bubble_bool == True:
+            if bubble_bool != 0:
                 display.blit(self.bubble_image,[self.x - self.bubble_image_w // 2 ,self.y - self.bubble_image_h // 2])
             display.blit(rendered_name,[self.x - rendered_name.get_width() // 2 ,self.y - rendered_name.get_height() - 40])
             for hrt in range(self.health):
@@ -65,7 +65,7 @@ class CarDraw():
         else:
 
             display.blit(self.image,[self.x - self.image_w // 2 + cam_x ,self.y - self.image_h // 2 + cam_y])
-            if bubble_bool:
+            if bubble_bool != 0:
                 display.blit(self.bubble_image,[self.x - self.bubble_image_w // 2 + cam_x ,self.y - self.bubble_image_h // 2 + cam_y])
             display.blit(rendered_name,[self.x - rendered_name.get_width() // 2 + cam_x ,self.y - rendered_name.get_height() - 40 + cam_y])
             for hrt in range(self.health):
