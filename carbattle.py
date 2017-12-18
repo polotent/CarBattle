@@ -6,11 +6,11 @@ pygame.init()
 infoObject = pygame.display.Info()
 display_width = infoObject.current_w
 display_height = infoObject.current_h
-#display_width = 700
-#display_height = 500
+display_width = 700
+display_height = 500
 center_w = display_width // 2
 center_h = display_height // 2
-gameDisplay = pygame.display.set_mode((display_width, display_height),pygame.FULLSCREEN)
+gameDisplay = pygame.display.set_mode((display_width, display_height))
 pygame.display.set_caption = ('CarBattle')
 pygame.display.iconify
 clock = pygame.time.Clock()
@@ -470,19 +470,19 @@ def game(user):
             client_car_color = player_lst[0]
 
         if player_lst[0] == "yellow":
-            car_draw_yellow = car.CarDraw("yellow",player_name,player_lst[1],player_lst[2],player_lst[3],player_lst[4],player_lst[6],player_lst[7],player_status)
+            car_draw_yellow = car.CarDraw("yellow",player_name,player_lst[1],player_lst[2],player_lst[3],player_lst[4],player_lst[5],player_lst[6],player_status)
             car_draw_obj["yellow"] = car_draw_yellow
             cars_obj["yellow"] = car_yellow
         if player_lst[0] == "red":
-            car_draw_red = car.CarDraw("red",player_name,player_lst[1],player_lst[2],player_lst[3],player_lst[4],player_lst[6],player_lst[7],player_status)
+            car_draw_red = car.CarDraw("red",player_name,player_lst[1],player_lst[2],player_lst[3],player_lst[4],player_lst[5],player_lst[6],player_status)
             car_draw_obj["red"] = car_draw_red
             cars_obj["red"] = car_red
         if player_lst[0] == "blue":
-            car_draw_blue = car.CarDraw("blue",player_name,player_lst[1],player_lst[2],player_lst[3],player_lst[4],player_lst[6],player_lst[7],player_status)
+            car_draw_blue = car.CarDraw("blue",player_name,player_lst[1],player_lst[2],player_lst[3],player_lst[4],player_lst[5],player_lst[6],player_status)
             car_draw_obj["blue"] = car_draw_blue
             cars_obj["blue"] = car_blue
         if player_lst[0] == "green":
-            car_draw_green = car.CarDraw("green",player_name,player_lst[1],player_lst[2],player_lst[3],player_lst[4],player_lst[6],player_lst[7],player_status)
+            car_draw_green = car.CarDraw("green",player_name,player_lst[1],player_lst[2],player_lst[3],player_lst[4],player_lst[5],player_lst[6],player_status)
             car_draw_obj["green"] = car_draw_green
             cars_obj["green"] = car_green
     #setting camera on client
@@ -531,7 +531,7 @@ def game(user):
             bonuses_draw_obj = server_global_data["bonuses"]
         else:
             bullets_draw_obj = client_global_data["bullets"]
-            bonuses_draw_obj = server_global_data["bonuses"]
+            bonuses_draw_obj = client_global_data["bonuses"]
 
         #Check for exit
         for event in pygame.event.get():
