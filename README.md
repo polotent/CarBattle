@@ -1,23 +1,24 @@
 # CarBattle
-This is a fighting multiplayer game written in Python and powered by [Pygame](http://www.pygame.org).
-You need to have a LAN network, good connection, and know your local ip address to play the game with your friends.
+This is a fighting local multiplayer game written in Python and powered by [Pygame](http://www.pygame.org).
+
+
 ## Necessary things
-[Python 3](https://www.python.org/downloads/)
-## Installing process
-#### Upgrade pip
-Linux
+### Python
+[Python 3](https://www.python.org/downloads/) installed on your machine.
+You need to have a LAN network, good connection.
+
+### Install Pygame
+Instal pygame.
 ```
-$ pip install -U pip
-```
-Windows
-```
-$ python -m pip install -U pip
-```
-#### Install pygame
-```
-$ python -m pip install pygame
+$ pip install pygame
 ```
 ### Launch
 ```
 $ python carbattle.py
 ```
+
+### Game process
+The main aim is to destroy all other cars. You can gather bonuses, such as Sword (temporary shooting faster), Shield (temporary immunity), Medkit (+1 heart of health, if not full).
+Use arrows to control your car.
+
+For the local multiplayer process the idea of room is used. First, create a room. Then ask your friends (up to 3) to connect to your room (they must enter ), and 
