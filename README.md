@@ -18,7 +18,15 @@ $ python carbattle.py
 ```
 
 ### Game process
+
+![scr1](screenshots/Screenshot_2.png)
+
+
+For the local multiplayer process the idea of room is used. First, create a room. Then ask your friends (up to 3) to connect to your room (they must enter ), and then start. 
+
 The main aim is to destroy all other cars. You can gather bonuses, such as Sword (temporary shooting faster), Shield (temporary immunity), Medkit (+1 heart of health, if not full).
 Use arrows to control your car.
 
-For the local multiplayer process the idea of room is used. First, create a room. Then ask your friends (up to 3) to connect to your room (they must enter ), and 
+![scr2](screenshots/Screenshot_4.png)
+
+Have fun!
