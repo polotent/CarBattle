@@ -3,12 +3,11 @@ This is a fighting local multiplayer game written in Python and powered by [Pyga
 
 
 ## Necessary things
-### Python
-[Python 3](https://www.python.org/downloads/) installed on your machine.
-You need to have a LAN network, good connection.
+- [Python 3](https://www.python.org/downloads/) installed on your machine
+- [Pygame](https://www.pygame.org) installed with pip
+- Good connection.
 
-### Install Pygame
-Instal pygame.
+Install pygame:
 ```
 $ pip install pygame
 ```
