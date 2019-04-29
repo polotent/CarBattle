@@ -19,7 +19,7 @@ $ python carbattle.py
 
 ### Game process
 
-![scr1](screenshots/Screenshot_2.png)
+![scr1](screenshots/Screenshot_3.png)
 
 
 For the local multiplayer process the idea of room is used. First, create a room. Then ask your friends (up to 3) to connect to your room (they must enter ), and then start. 
